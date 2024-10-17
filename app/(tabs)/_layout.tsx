@@ -1,5 +1,7 @@
 import React from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+
+
 import { Link, Tabs } from 'expo-router';
 import { Pressable } from 'react-native';
 
@@ -30,7 +32,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Perfil',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
           headerRight: () => (
             <Link href="/modal" asChild>
               <Pressable>
@@ -51,14 +53,14 @@ export default function TabLayout() {
         name="two"
         options={{
           title: 'Inicio',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({color}) => <TabBarIcon name="home" color={color} />,
         }}
       />
       <Tabs.Screen
         name="three"
         options={{
           title: 'Usuarios',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="users" color={color} />,
         }}
       />
     </Tabs>
