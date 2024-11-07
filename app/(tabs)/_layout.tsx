@@ -70,6 +70,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="mapslocation"
+        options={{
+          title: 'mamapslocationps',
+          tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
+        }}
+      />
     </Tabs>
   );
 }
