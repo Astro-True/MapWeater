@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import MapView, { Marker } from 'react-native-maps';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, Image } from 'react-native';
 import axios from 'axios';
 import * as Location from 'expo-location';
 
@@ -32,7 +32,7 @@ export default function TabOneScreen() {
     const [weatherData, setWeatherData] = useState<any | null>(null);
     const [location, setLocation] = useState<LocationType | null>(null);
     const [nearbyLocations, setNearbyLocations] = useState<LocationType[]>([]);
-
+    const mapRef = useRef<MapView>(null);
     const kelvinToCelsius = (kelvin: number): string => {
         return kelvin !== undefined ? (kelvin - 273.15).toFixed(1) : "N/A";
     };
@@ -42,9 +42,7 @@ export default function TabOneScreen() {
         if (status === 'granted') {
             const userLocation = await Location.getCurrentPositionAsync({});
             const { latitude, longitude } = userLocation.coords;
-            setLocation({ latitude, longitude });
-            fetchWeatherData(latitude, longitude);
-            setNearbyLocations(generateNearbyLocations(latitude, longitude)); // Genera ubicaciones cercanas
+            updateLocation(latitude, longitude);
         } else {
             console.log('Location permission denied');
         }
@@ -55,21 +53,36 @@ export default function TabOneScreen() {
         axios.get(UrlApi)
             .then(response => {
                 setWeatherData(response.data);
+            console.log(lat+" : "+lon);
             })
             .catch(error => {
                 console.error("Error fetching weather data", error);
             });
     };
 
-    // Función para generar ubicaciones cercanas
     const generateNearbyLocations = (lat: number, lon: number) => {
-        const offset = 0.05; // Desplazamiento de 0.05 grados para simular ubicaciones cercanas
+        const offset = 0.05;
         return [
             { latitude: lat + offset, longitude: lon },
             { latitude: lat - offset, longitude: lon },
             { latitude: lat, longitude: lon + offset },
             { latitude: lat, longitude: lon - offset },
         ];
+    };
+
+    const updateLocation = (latitude: number, longitude: number) => {
+        setLocation({ latitude, longitude });
+        fetchWeatherData(latitude, longitude);
+        setNearbyLocations(generateNearbyLocations(latitude, longitude));
+
+        if (mapRef.current) {
+            mapRef.current.animateToRegion({
+                latitude,
+                longitude,
+                latitudeDelta: 0.150,
+                longitudeDelta: 0.150,
+            }, 500); // Centra el mapa en la nueva ubicación con una animación
+        }
     };
 
     useEffect(() => {
@@ -119,6 +132,7 @@ export default function TabOneScreen() {
             <View style={styles.mapContainer}>
                 {location && weatherData && (
                     <MapView
+                    ref={mapRef}
                         style={styles.map}
                         initialRegion={{
                             latitude: location.latitude,
@@ -126,18 +140,26 @@ export default function TabOneScreen() {
                             latitudeDelta: 0.05,
                             longitudeDelta: 0.05,
                         }}
-                    >
-                        {/* Marcador para la ubicación actual */}
+                        onPress={(e) => {
+                            const { latitude, longitude } = e.nativeEvent.coordinate;
+                            updateLocation(latitude, longitude);
+                        }}>
                         <Marker
+                            draggable
                             coordinate={location}
+                            onDragEnd={(e) => {
+                                const { latitude, longitude } = e.nativeEvent.coordinate;
+                                updateLocation(latitude, longitude);
+                                
+                            }}
                             title="Tu ubicación"
                             description={getTranslatedCondition(weatherData.list[0].weather[0].description)}
                             image={{ uri: getWeatherIconUrl(weatherData.list[0].weather[0].icon) }}
                         />
+                        {/* Icono junto al marcador */}
 
-                        {/* Marcadores para ubicaciones cercanas */}
                         {nearbyLocations.map((loc, index) => {
-                            const nearbyWeatherData = weatherData?.list[index]; // Suponiendo que tenemos datos para cada ubicación
+                            const nearbyWeatherData = weatherData?.list[index];
                             return (
                                 <Marker
                                     key={index}
@@ -146,6 +168,7 @@ export default function TabOneScreen() {
                                     description={getTranslatedCondition(nearbyWeatherData?.weather[0].description || '')}
                                     image={{ uri: getWeatherIconUrl(nearbyWeatherData?.weather[0].icon || '') }}
                                 />
+                                
                             );
                         })}
                     </MapView>
@@ -185,5 +208,13 @@ const styles = StyleSheet.create({
     },
     map: {
         ...StyleSheet.absoluteFillObject,
+    },
+    weatherIcon: {
+        position: 'relative',
+        top: '50%',
+        left: '50%',
+        width: 5,
+        height: 5,
+        transform: [{ translateX: -15 }, { translateY: -15 }],
     },
 });

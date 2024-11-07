@@ -2,8 +2,7 @@ import React from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 
-import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
+import { Tabs } from 'expo-router';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -28,52 +27,24 @@ export default function TabLayout() {
         // to prevent a hydration error in React Navigation v6.
         headerShown: useClientOnlyValue(false, true),
       }}>
+        <Tabs.Screen
+          name="estatico"
+          options={{
+            title: 'Mapa Estatico',
+            tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
+          }}
+        />
       <Tabs.Screen
-        name="index"
+        name="clima"
         options={{
-          title: 'Perfil',
-          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="two"
-        options={{
-          title: 'Inicio',
-          tabBarIcon: ({color}) => <TabBarIcon name="home" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="three"
-        options={{
-          title: 'Usuarios',
-          tabBarIcon: ({ color }) => <TabBarIcon name="users" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="maps"
-        options={{
-          title: 'maps',
+          title: 'Estado de Clima',
           tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="mapslocation"
+        name="climas"
         options={{
-          title: 'mamapslocationps',
+          title: 'Estados de climas',
           tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
         }}
       />
