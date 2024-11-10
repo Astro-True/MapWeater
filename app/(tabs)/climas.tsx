@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import MapView, { Marker } from 'react-native-maps';
-import { StyleSheet, View, Text, Image } from 'react-native';
+import { StyleSheet, View, Text, Button } from 'react-native';
 import axios from 'axios';
 import * as Location from 'expo-location';
 
@@ -26,12 +26,19 @@ const conditionTranslation: { [key: string]: string } = {
     "fog": "niebla",
     "tornado": "tornado",
     "light rain": "lluvia ligera",
+    "drizzle": "llovizna",
+    "heavy rain": "lluvia intensa",
+    "light snow": "nevada ligera",
+    "heavy snow": "nevada intensa",
+    "freezing rain": "lluvia congelada",
+    "clear": "despejado",
 };
 
 export default function TabOneScreen() {
     const [weatherData, setWeatherData] = useState<any | null>(null);
     const [location, setLocation] = useState<LocationType | null>(null);
     const [nearbyLocations, setNearbyLocations] = useState<LocationType[]>([]);
+    const [initialLocation, setInitialLocation] = useState<LocationType | null>(null);
     const mapRef = useRef<MapView>(null);
     const kelvinToCelsius = (kelvin: number): string => {
         return kelvin !== undefined ? (kelvin - 273.15).toFixed(1) : "N/A";
@@ -42,7 +49,10 @@ export default function TabOneScreen() {
         if (status === 'granted') {
             const userLocation = await Location.getCurrentPositionAsync({});
             const { latitude, longitude } = userLocation.coords;
-            updateLocation(latitude, longitude);
+            if (!initialLocation) {
+                // Solo se establece una vez la ubicación inicial
+                setInitialLocation({ latitude, longitude });
+            }updateLocation(latitude, longitude);
         } else {
             console.log('Location permission denied');
         }
@@ -53,7 +63,7 @@ export default function TabOneScreen() {
         axios.get(UrlApi)
             .then(response => {
                 setWeatherData(response.data);
-            console.log(lat+" : "+lon);
+                console.log(lat + " : " + lon);
             })
             .catch(error => {
                 console.error("Error fetching weather data", error);
@@ -84,7 +94,18 @@ export default function TabOneScreen() {
             }, 500); // Centra el mapa en la nueva ubicación con una animación
         }
     };
+    
+    const resetOrientation = () => {
+        if (mapRef.current) {
+            mapRef.current.animateCamera({ heading: 0 }, { duration: 500 });
+        }
+    };
 
+    const returnToInitialLocation = () => {
+        if (initialLocation) {
+            updateLocation(initialLocation.latitude, initialLocation.longitude);
+        }
+    };
     useEffect(() => {
         getLocation();
     }, []);
@@ -132,7 +153,7 @@ export default function TabOneScreen() {
             <View style={styles.mapContainer}>
                 {location && weatherData && (
                     <MapView
-                    ref={mapRef}
+                        ref={mapRef}
                         style={styles.map}
                         initialRegion={{
                             latitude: location.latitude,
@@ -150,7 +171,7 @@ export default function TabOneScreen() {
                             onDragEnd={(e) => {
                                 const { latitude, longitude } = e.nativeEvent.coordinate;
                                 updateLocation(latitude, longitude);
-                                
+
                             }}
                             title="Tu ubicación"
                             description={getTranslatedCondition(weatherData.list[0].weather[0].description)}
@@ -168,11 +189,15 @@ export default function TabOneScreen() {
                                     description={getTranslatedCondition(nearbyWeatherData?.weather[0].description || '')}
                                     image={{ uri: getWeatherIconUrl(nearbyWeatherData?.weather[0].icon || '') }}
                                 />
-                                
+
                             );
                         })}
                     </MapView>
                 )}
+            </View>
+            <View style={styles.buttonContainer}>
+                <Button title="Volver a ubicación inicial" onPress={returnToInitialLocation} />
+                <Button title="Reajustar orientación" onPress={resetOrientation} />
             </View>
         </View>
     );
@@ -216,5 +241,11 @@ const styles = StyleSheet.create({
         width: 5,
         height: 5,
         transform: [{ translateX: -15 }, { translateY: -15 }],
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        padding: 10,
+        backgroundColor: '#fff',
     },
 });

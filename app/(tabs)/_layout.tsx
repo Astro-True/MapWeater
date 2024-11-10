@@ -1,8 +1,9 @@
 import React from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
-
-import { Tabs } from 'expo-router';
+import { Link, Tabs } from 'expo-router';
+import { Pressable } from 'react-native';
+//import { Tabs } from 'expo-router';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -23,28 +24,55 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
         headerShown: useClientOnlyValue(false, true),
       }}>
         <Tabs.Screen
-          name="estatico"
-          options={{
-            title: 'Mapa Estatico',
-            tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
-          }}
-        />
-      <Tabs.Screen
-        name="clima"
+        name="index"
         options={{
-          title: 'Estado de Clima',
+          title: 'GUIA',
           tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
+          headerRight: () => (
+            <Link href="/modal" asChild>
+              <Pressable>
+                {({ pressed }) => (
+                  <FontAwesome
+                    name="info-circle"
+                    size={25}
+                    color={Colors[colorScheme ?? 'light'].text}
+                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
+                  />
+                )}
+              </Pressable>
+            </Link>
+          ),
         }}
       />
+
       <Tabs.Screen
         name="climas"
         options={{
           title: 'Estados de climas',
+          tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="today"
+        options={{
+          title: 'Clima Del Dia',
+          tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="tomorrow"
+        options={{
+          title: 'Clima De Mañana',
+          tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
+        }}
+      />
+            <Tabs.Screen
+        name="fiveday"
+        options={{
+          title: 'Próximos 5 días',
           tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
         }}
       />
