@@ -73,7 +73,7 @@ export default function TabOneScreen() {
         return conditionTranslation[condition] || condition; // Si no se encuentra en el mapeo, se devuelve el original
     };
     const getWeatherIconUrl = (iconCode: string) => {
-        return `http://openweathermap.org/img/wn/${iconCode}@2x.png`; // URL para obtener el ícono en alta resolución
+        return `https://openweathermap.org/img/wn/${iconCode}@2x.png`; // URL para obtener el ícono en alta resolución
     };
     const getWeatherForTomorrow = () => {
         const tomorrowDate = getTomorrowDate();

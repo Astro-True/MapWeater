@@ -48,7 +48,7 @@ const conditionIcons: { [key: string]: string } = {
 };
 
 const getWeatherIconUrl = (iconCode: string) => {
-    return `http://openweathermap.org/img/wn/${iconCode}@2x.png`;
+    return `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
 };
 
 const WeatherConditionList = () => {

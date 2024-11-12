@@ -6,7 +6,6 @@ import { StyleSheet, View, Text, Image, Button, Modal, ScrollView } from 'react-
 import axios from 'axios';
 import * as Location from 'expo-location';
 import MapView, { Marker } from 'react-native-maps';
-import { red } from 'react-native-reanimated/lib/typescript/reanimated2/Colors';
 const API_KEY = 'dfbef9fd443b68f1b4944a7dd0bc141d';
 interface LocationType {
   latitude: number;
@@ -35,7 +34,7 @@ const conditionTranslation: { [key: string]: string } = {
   "clear": "despejado",
 };
 const getWeatherIconUrl = (iconCode: string) => {
-  return `http://openweathermap.org/img/wn/${iconCode}@2x.png`; // URL para obtener el ícono en alta resolución
+  return `https://openweathermap.org/img/wn/${iconCode}@2x.png`; // URL para obtener el ícono en alta resolución
 };
 const kelvinToCelsius = (kelvin: number): string => {
   return kelvin !== undefined ? (kelvin - 273.15).toFixed(1) : "N/A";

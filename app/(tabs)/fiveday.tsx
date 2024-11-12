@@ -95,7 +95,7 @@ export default function TabOneScreen() {
   };
 
   const getWeatherIconUrl = (iconCode: string) => {
-    return `http://openweathermap.org/img/wn/${iconCode}@2x.png`; // URL para obtener el ícono en alta resolución
+    return `https://openweathermap.org/img/wn/${iconCode}@2x.png`; // URL para obtener el ícono en alta resolución
   };
 
 
