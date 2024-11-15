@@ -32,6 +32,8 @@ const conditionTranslation: { [key: string]: string } = {
     "heavy snow": "nevada intensa",
     "freezing rain": "lluvia congelada",
     "clear": "despejado",
+    "overcast clouds": "Nubes nubladas",
+
 };
 
 export default function TabOneScreen() {
@@ -52,7 +54,7 @@ export default function TabOneScreen() {
             if (!initialLocation) {
                 // Solo se establece una vez la ubicación inicial
                 setInitialLocation({ latitude, longitude });
-            }updateLocation(latitude, longitude);
+            } updateLocation(latitude, longitude);
         } else {
             console.log('Location permission denied');
         }
@@ -94,7 +96,7 @@ export default function TabOneScreen() {
             }, 500); // Centra el mapa en la nueva ubicación con una animación
         }
     };
-    
+
     const resetOrientation = () => {
         if (mapRef.current) {
             mapRef.current.animateCamera({ heading: 0 }, { duration: 500 });

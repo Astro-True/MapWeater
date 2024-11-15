@@ -33,6 +33,8 @@ const conditionTranslation: { [key: string]: string } = {
   "heavy snow": "nevada intensa",
   "freezing rain": "lluvia congelada",
   "clear": "despejado",
+  "overcast clouds": "Nubes nubladas",
+
 };
 
 export default function TabOneScreen() {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, Image, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, Image, ScrollView, Button  } from 'react-native';
 
 const conditionTranslation: { [key: string]: string } = {
     "clear sky": "cielo despejado",
@@ -22,6 +22,8 @@ const conditionTranslation: { [key: string]: string } = {
     "heavy snow": "nevada intensa",
     "freezing rain": "lluvia congelada",
     "clear": "despejado",
+    "overcast clouds": "Nubes nubladas",
+
 };
 
 const conditionIcons: { [key: string]: string } = {
@@ -74,6 +76,7 @@ export default function TabOneScreen() {
         <View style={styles.container}>
             <WeatherConditionList />
         </View>
+        
     );
 }
 
