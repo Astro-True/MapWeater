@@ -1,49 +1,16 @@
-// import { View, Dimensions } from 'react-native';
-// import { LineChart } from "react-native-chart-kit";
-// const screenWidth = Dimensions.get('window').width;
-// const data = {
-//     labels: ["January", "February", "March", "April", "May", "June"],
-//     datasets: [
-//         {
-//             data: [20, 45, 28, 80, 99, 43],
-//         }
-//     ],
-// };
-// const chartConfig = {
-//     backgroundGradientFrom: '#ffffff',
-//     backgroundGradientTo: '#ffffff',
-//     decimalPlaces: 2,
-//     color: (opacity = 1) => `rgba(0,0,255, ${opacity})`,
-//     labelColor: (opacity = 1) => `rgba(0,0,0, ${opacity})`,
-//     style: {
-//         borderRadius: 16,
-//     },
-// };
-// const TabOneScreen = () => {
-//     return (
-//         <View style={{flex:1, justifyContent:'center',alignItems:'center'}}>
-//             <LineChart
-//                 data={data}
-//                 width={screenWidth}
-//                 height={256}
-//                 verticalLabelRotation={30}
-//                 chartConfig={chartConfig}
-//                 bezier
-//             />
-//         </View>
-//     )
-// }
-// export default TabOneScreen;
-
-//const UrlApi = 'api.openweathermap.org/data/2.5/forecast?lat=-65.93253&lon=-17.58777&appid=dfbef9fd443b68f1b4944a7dd0bc141d'
-//const UrlApi = 'https://api.openweathermap.org/data/2.5/forecast?lat=-65.93253&lon=-17.58777&appid=dfbef9fd443b68f1b4944a7dd0bc141d';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Image, Button, Modal, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
+import { StyleSheet, View, Text, Image, Button, Modal, ScrollView, ImageBackground, } from 'react-native';
 import axios from 'axios';
 import * as Location from 'expo-location';
-import MapView, { Marker } from 'react-native-maps';
-import { LineChart } from "react-native-chart-kit";
+
 const API_KEY = 'dfbef9fd443b68f1b4944a7dd0bc141d';
+import { Data } from '../models/map';
+
+interface LocationType {
+    latitude: number;
+    longitude: number;
+}
 
 const conditionTranslation: { [key: string]: string } = {
     "clear sky": "cielo despejado",
@@ -68,19 +35,14 @@ const conditionTranslation: { [key: string]: string } = {
     "clear": "despejado",
     "overcast clouds": "Nubes nubladas",
 };
-const getWeatherIconUrl = (iconCode: string) => {
-    return `https://openweathermap.org/img/wn/${iconCode}@2x.png`; // URL para obtener el ícono en alta resolución
-};
-const kelvinToCelsius = (kelvin: number): string => {
-    return kelvin !== undefined ? (kelvin - 273.15).toFixed(1) : "N/A";
-};
 
-const TabOneScreen = () => {
-    const [weatherData, setWeatherData] = useState<any | null>(null);
+export default function TabOneScreen() {
+    const [weatherData, setWeatherData] = useState<Data | null>(null);
     const [location, setLocation] = useState<LocationType | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
-    const [weatherModalVisible, setWeatherModalVisible] = useState(false);
-
+    const kelvinToCelsius = (kelvin: number): string => {
+        return kelvin !== undefined ? (kelvin - 273.15).toFixed(1) : "N/A";
+    };
     const getLocation = async () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status === 'granted') {
@@ -88,51 +50,44 @@ const TabOneScreen = () => {
             const { latitude, longitude } = userLocation.coords;
             setLocation({ latitude, longitude });
             fetchWeatherData(latitude, longitude);
-            // Iniciar la actualización de ubicación en tiempo real
-            Location.watchPositionAsync(
-                { accuracy: Location.Accuracy.High, distanceInterval: 1 }, // Actualización continua
-                (newLocation) => {
-                    setLocation({
-                        latitude: newLocation.coords.latitude,
-                        longitude: newLocation.coords.longitude,
-                    });
-                }
-            );
         } else {
-            console.log('Location permission denied');
+            console.log('Permiso de ubicación denegado');
         }
     };
-
+    // Fetch de datos del clima
     const fetchWeatherData = (lat: number, lon: number) => {
-        const UrlApi = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}`;
-        axios.get(UrlApi)
-            .then(response => {
+        const urlApi = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}`;
+        axios.get(urlApi)
+            .then((response) => {
                 setWeatherData(response.data);
             })
-            .catch(error => {
-                console.error("Error fetching weather data", error);
+            .catch((error) => {
+                console.error("Error al obtener datos del clima", error);
             });
     };
-    const getTranslatedCondition = (condition: string) => {
-        return conditionTranslation[condition] || condition;
-    };
-    const getThreeHourIntervalsToday = () => {
+
+    useEffect(() => {
+        getLocation();
+    }, []);
+
+    // Pronóstico para 5 días
+    const getFiveDayForecast = () => {
         if (!weatherData) return [];
-        // Obtener la fecha del día actual
-        const today = new Date();
-        const todayDate = today.toISOString().split('T')[0]; // Fecha en formato YYYY-MM-DD
-        const hourlyData = [];
-        for (let i = 0; i < weatherData.list.length; i++) {
-            // Obtener la fecha de cada pronóstico
-            const forecastDate = weatherData.list[i].dt_txt.split(' ')[0]; // Extraer la fecha (YYYY-MM-DD)
-            if (forecastDate === todayDate) {
-                hourlyData.push(weatherData.list[i]);
-            }
+        // Agrupamos por día (cada 8 intervalos aprox. equivale a un día)
+        const dailyData = [];
+        for (let i = 0; i < weatherData.list.length; i += 8) {
+            dailyData.push(weatherData.list[i]);
         }
-        // Retornar las previsiones de 3 horas para el día actual
-        return hourlyData.slice(0, 8); // Tomar las primeras 8 previsiones de 3 horas
+        return dailyData.slice(0, 5); // Solo los próximos 5 días
     };
 
+    // Traducción de las condiciones
+    const getTranslatedCondition = (condition: string) =>
+        conditionTranslation[condition] || condition;
+
+    // URL del ícono del clima
+    const getWeatherIconUrl = (iconCode: string) =>
+        `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
     //dia
     const getDayOfWeek = (dateString: string) => {
         const date = new Date(dateString);
@@ -155,229 +110,141 @@ const TabOneScreen = () => {
         const seconds = String(date.getSeconds()).padStart(2, '0');
         return `${hours}:${minutes}:${seconds}`;
     };
-    const screenWidth = Dimensions.get('window').width;
-
-    interface LocationType {
-        latitude: number;
-        longitude: number;
-    }
-    interface ChartData {
-        labels: string[];
-        datasets: { data: number[] }[];
-    }
-
-    // Configuración del gráfico
-    const prepareChartData = (): ChartData => {
-        const intervals = getThreeHourIntervalsToday();
-        const labels = intervals.map((data: any) => data.dt_txt.split(' ')[1].slice(0, 5)); // Horas
-        const temperatures = intervals.map((data: any) => parseFloat(kelvinToCelsius(data.main.temp))); // Convertir temperaturas a números
-
-        return {
-            labels,
-            datasets: [
-                {
-                    data: temperatures,
-                },
-            ],
-        };
-    };
-
-
-    const chartConfig = {
-        backgroundGradientFrom: '#ffffff',
-        backgroundGradientTo: '#ffffff',
-        decimalPlaces: 2,
-        color: (opacity = 1) => `rgba(0, 0, 255, ${opacity})`,
-        labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-        style: {
-            borderRadius: 16,
-        },
-    };
-
-    useEffect(() => {
-        getLocation();
-    }, []);
     return (
-        <View style={styles.container}>
-            <View style={styles.contBtn}>
-                <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
-                    <Text style={styles.buttonText}>Ver tu ubicacion</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={() => setWeatherModalVisible(true)}>
-                    <Text style={styles.buttonText}>Ver gráfico del clima</Text>
-                </TouchableOpacity>
-            </View>
-
-            <Modal
-                visible={modalVisible}
-                animationType="slide"
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <View style={styles.mapContainer}>
-                    {location && weatherData && (
-                        <MapView
-                            style={styles.map}
-                            region={{
-                                latitude: location.latitude,
-                                longitude: location.longitude,
-                                latitudeDelta: 0.05,
-                                longitudeDelta: 0.05,
-                            }}
-                        >
-                            <Marker
-                                coordinate={location}
-                                title="Tu ubicación"
-                                description={getTranslatedCondition(weatherData.list[0].weather[0].description)}
-                                image={{ uri: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png' }} // Icono de marcador de Google Maps
-                            />
-                        </MapView>
-                    )}
-                </View>
-                <Button title="Cerrar" onPress={() => setModalVisible(false)} color="#4CAF50" />
-            </Modal>
-            <Modal
-                visible={weatherModalVisible}
-                animationType="slide"
-                onRequestClose={() => setWeatherModalVisible(false)}
-            >
-                <View style={styles.chartContainer}>
-                    {weatherData ? (
-                        <LineChart
-                            data={prepareChartData()}
-                            width={screenWidth}
-                            height={256}
-                            verticalLabelRotation={30}
-                            chartConfig={chartConfig}
-                            bezier
-                        />
-                    ) : (
-                        <Text style={styles.loadingText}>Cargando datos del clima...</Text>
-                    )}
-                </View>
-                <Button title="Cerrar" onPress={() => setWeatherModalVisible(false)} color="#4CAF50" />
-            </Modal>
-
-            <View style={styles.modalContainer}>
-                <ScrollView>
-                    {weatherData ? (
-                        //weatherData.list.slice(0, 6).map((data: any, index: number) => (
-                        getThreeHourIntervalsToday().map((data, index) => (
-                            <View key={index} style={styles.dayContainer}>
-                                <Text style={styles.weatherText}>
-                                    Día: {getDayOfWeek(data.dt_txt)}
+        <ImageBackground
+            source={{ uri: 'https://th.bing.com/th/id/OIP.Uh7i_KXbFEG0TD_-VKcHzgHaNK?rs=1&pid=ImgDetMain' }}
+            style={styles.background}
+        >
+            <View style={styles.container}>
+                <Text style={styles.title}>Tu clima actual</Text>
+                {weatherData ? (
+                    <ScrollView>
+                        {getFiveDayForecast().map((data, index) => (
+                            <View key={index} style={styles.card}>
+                                <Text style={styles.tempText}>
+                                    {new Date(data.dt_txt).toLocaleDateString('es-ES', {
+                                        weekday: 'long',
+                                    })}
                                 </Text>
-                                <Text style={styles.weatherText}>
-                                    Fecha: {getDate(data.dt_txt)}
+                                <Text style={styles.tempText}>
+                                    {new Date(data.dt_txt).toLocaleDateString('es-ES', {
+                                        day: 'numeric', month: 'short', year: 'numeric',
+                                    })}
                                 </Text>
-                                <Text style={styles.weatherText}>
+                                <Text style={styles.tempText}>
                                     Hora: {getTime(data.dt_txt)}
                                 </Text>
-                                <Text style={styles.weatherText}>
-                                    Temperatura: {kelvinToCelsius(data.main.temp)}°C
-                                </Text>
-                                <Text style={styles.weatherText}>
+                                <Text style={styles.tempText}>
                                     Humedad: {data.main.humidity}%
                                 </Text>
-                                <Text style={styles.weatherText}>
+                                <Text style={styles.tempText}>
                                     Velocidad del viento: {data.wind.speed} m/s
-                                </Text>
-                                <Text style={styles.weatherText}>
-                                    Condición: {getTranslatedCondition(data.weather[0].description)}
                                 </Text>
                                 <Image
                                     source={{ uri: getWeatherIconUrl(data.weather[0].icon) }}
                                     style={styles.weatherIcon}
                                 />
+                                <Text style={styles.tempText}>
+                                    {kelvinToCelsius(data.main.temp)}°C
+                                </Text>
+                                <Text style={styles.conditionText}>
+                                    {getTranslatedCondition(data.weather[0].description)}
+                                </Text>
                             </View>
-
-                        ))
-
-                    ) : (
-                        <Text style={styles.loadingText}>Cargando datos del clima...</Text>
-                    )}
-                    <View style={styles.chartContainer}>
-                        {weatherData ? (
-                            <LineChart
-                                data={prepareChartData()}
-                                width={screenWidth}
-                                height={256}
-                                verticalLabelRotation={30}
-                                chartConfig={chartConfig}
-                                bezier
-                            />
-                        ) : (
-                            <Text style={styles.loadingText}>Cargando datos del clima...</Text>
+                        ))}
+                    </ScrollView>
+                ) : (
+                    <Text style={styles.loadingText}>Cargando datos del clima...</Text>
+                )}
+                <Button title="Ver tu ubicacion" onPress={() => setModalVisible(true)} color="#1b4f72" />
+                <Modal
+                    visible={modalVisible}
+                    animationType="slide"
+                    onRequestClose={() => setModalVisible(false)}>
+                    <View style={styles.mapContainer}>
+                        {location && weatherData && (
+                            <MapView
+                                style={styles.map}
+                                initialRegion={{
+                                    latitude: location.latitude,
+                                    longitude: location.longitude,
+                                    latitudeDelta: 0.05,
+                                    longitudeDelta: 0.05,
+                                }}>
+                                <Marker
+                                    coordinate={location}
+                                    title="Tu ubicación"
+                                    description={getTranslatedCondition(
+                                        weatherData.list[0].weather[0].description
+                                    )}
+                                />
+                            </MapView>
                         )}
                     </View>
-                </ScrollView>
+                    <Button title="Cerrar" onPress={() => setModalVisible(false)} color="#1b4f72" />
+                </Modal>
             </View>
-        </View>
+        </ImageBackground>
     );
-};
+}
 
 const styles = StyleSheet.create({
+    background: {
+        flex: 1,
+    },
     container: {
         flex: 1,
-    },
-    modalContainer: {
-        flex: 1,
         padding: 20,
-        backgroundColor: '#fff',
+        alignItems: 'center',
     },
     title: {
-        fontSize: 20,
-        fontWeight: 'bold',
+        fontSize: 28,
+        fontWeight: '300',
         textAlign: 'center',
-        marginBottom: 10,
-    },
-    dayContainer: {
+        color: '#fff',
         marginBottom: 20,
-        alignItems: 'center',
-
     },
-    weatherText: {
-        fontSize: 16,
-        textAlign: 'center',
+    card: {
+        width: 225,
+        backgroundColor: '#ffffffdd',
+        borderRadius: 20,
+        padding: 15,
+        marginBottom: 10,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    dateText: {
+        fontSize: 13,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    tempText: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    conditionText: {
+        fontSize: 15,
+        color: '#666',
     },
     weatherIcon: {
-        width: 50,
+        width: 80,
         height: 50,
+        marginVertical: 10,
     },
     loadingText: {
         textAlign: 'center',
-        marginVertical: 10,
+        fontSize: 18,
+        color: '#fff',
     },
     mapContainer: {
         flex: 1,
-        width: '100%',
     },
     map: {
         ...StyleSheet.absoluteFillObject,
     },
-    chartContainer: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    contBtn: {
-        backgroundColor: '#0000',
-        flexDirection: 'row',
-        justifyContent: 'center',
-    },
-    button: {
-        backgroundColor: '#4CAF50',  // Color de fondo
-        paddingVertical: 1,          // Espaciado vertical
-        paddingHorizontal: 10,        // Espaciado horizontal
-        borderRadius: 8,              // Bordes redondeados
-        margin: 10,                  // Espaciado alrededor del botón
-        height: 30,
-    },
-    buttonText: {
-        color: '#fff',                // Color del texto
-        fontSize: 16,                 // Tamaño de la fuente
-        fontWeight: 'bold',           // Negrita
-        textAlign: 'center',          // Centrar el texto
-    },
 });
-
-export default TabOneScreen;

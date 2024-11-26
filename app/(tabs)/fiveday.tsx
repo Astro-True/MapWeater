@@ -34,7 +34,6 @@ const conditionTranslation: { [key: string]: string } = {
   "freezing rain": "lluvia congelada",
   "clear": "despejado",
   "overcast clouds": "Nubes nubladas",
-
 };
 
 export default function TabOneScreen() {
@@ -99,8 +98,6 @@ export default function TabOneScreen() {
   const getWeatherIconUrl = (iconCode: string) => {
     return `https://openweathermap.org/img/wn/${iconCode}@2x.png`; // URL para obtener el ícono en alta resolución
   };
-
-
   //dia
   const getDayOfWeek = (dateString: string) => {
     const date = new Date(dateString);
