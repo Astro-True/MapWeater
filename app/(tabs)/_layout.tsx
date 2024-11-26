@@ -26,7 +26,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: useClientOnlyValue(false, true),
       }}>
-        <Tabs.Screen
+      <Tabs.Screen
         name="index"
         options={{
           title: 'GUIA',
@@ -69,10 +69,17 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
         }}
       />
-            <Tabs.Screen
+      <Tabs.Screen
         name="fiveday"
         options={{
           title: 'Próximos 5 días',
+          tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
+        }}
+      />
+            <Tabs.Screen
+        name="pruebas"
+        options={{
+          title: 'Pruebas',
           tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
         }}
       />

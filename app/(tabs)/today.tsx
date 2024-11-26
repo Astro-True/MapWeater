@@ -2,15 +2,13 @@
 //const UrlApi = 'api.openweathermap.org/data/2.5/forecast?lat=-65.93253&lon=-17.58777&appid=dfbef9fd443b68f1b4944a7dd0bc141d'
 //const UrlApi = 'https://api.openweathermap.org/data/2.5/forecast?lat=-65.93253&lon=-17.58777&appid=dfbef9fd443b68f1b4944a7dd0bc141d';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Image, Button, Modal, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, Image, Button, Modal, ScrollView, Dimensions } from 'react-native';
 import axios from 'axios';
 import * as Location from 'expo-location';
 import MapView, { Marker } from 'react-native-maps';
+import { LineChart } from "react-native-chart-kit";
 const API_KEY = 'dfbef9fd443b68f1b4944a7dd0bc141d';
-interface LocationType {
-  latitude: number;
-  longitude: number;
-}
+
 const conditionTranslation: { [key: string]: string } = {
   "clear sky": "cielo despejado",
   "few clouds": "pocas nubes",
@@ -32,6 +30,7 @@ const conditionTranslation: { [key: string]: string } = {
   "heavy snow": "nevada intensa",
   "freezing rain": "lluvia congelada",
   "clear": "despejado",
+  "overcast clouds": "Nubes nubladas",
 };
 const getWeatherIconUrl = (iconCode: string) => {
   return `https://openweathermap.org/img/wn/${iconCode}@2x.png`; // URL para obtener el ícono en alta resolución
@@ -44,6 +43,7 @@ const TabOneScreen = () => {
   const [weatherData, setWeatherData] = useState<any | null>(null);
   const [location, setLocation] = useState<LocationType | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+
   const getLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status === 'granted') {
@@ -118,10 +118,48 @@ const TabOneScreen = () => {
     const seconds = String(date.getSeconds()).padStart(2, '0');
     return `${hours}:${minutes}:${seconds}`;
   };
+  const screenWidth = Dimensions.get('window').width;
+
+  interface LocationType {
+    latitude: number;
+    longitude: number;
+  }
+  interface ChartData {
+    labels: string[];
+    datasets: { data: number[] }[];
+  }
+
+  // Configuración del gráfico
+  const prepareChartData = (): ChartData => {
+    const intervals = getThreeHourIntervalsToday();
+    const labels = intervals.map((data: any) => data.dt_txt.split(' ')[1].slice(0, 5)); // Horas
+    const temperatures = intervals.map((data: any) => parseFloat(kelvinToCelsius(data.main.temp))); // Convertir temperaturas a números
+
+    return {
+      labels,
+      datasets: [
+        {
+          data: temperatures,
+        },
+      ],
+    };
+  };
+
+
+  const chartConfig = {
+    backgroundGradientFrom: '#ffffff',
+    backgroundGradientTo: '#ffffff',
+    decimalPlaces: 2,
+    color: (opacity = 1) => `rgba(0, 0, 255, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    style: {
+      borderRadius: 16,
+    },
+  };
+
   useEffect(() => {
     getLocation();
   }, []);
-
   return (
     <View style={styles.container}>
       <Button title="Ver tu ubicacion" onPress={() => setModalVisible(true)} />
@@ -152,6 +190,7 @@ const TabOneScreen = () => {
         </View>
         <Button title="Cerrar" onPress={() => setModalVisible(false)} />
       </Modal>
+
       <View style={styles.modalContainer}>
         <ScrollView>
           {weatherData ? (
@@ -184,10 +223,26 @@ const TabOneScreen = () => {
                   style={styles.weatherIcon}
                 />
               </View>
+
             ))
+
           ) : (
             <Text style={styles.loadingText}>Cargando datos del clima...</Text>
           )}
+          <View style={styles.chartContainer}>
+            {weatherData ? (
+              <LineChart
+                data={prepareChartData()}
+                width={screenWidth}
+                height={256}
+                verticalLabelRotation={30}
+                chartConfig={chartConfig}
+                bezier
+              />
+            ) : (
+              <Text style={styles.loadingText}>Cargando datos del clima...</Text>
+            )}
+          </View>
         </ScrollView>
       </View>
     </View>
@@ -232,6 +287,11 @@ const styles = StyleSheet.create({
   },
   map: {
     ...StyleSheet.absoluteFillObject,
+  },
+  chartContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

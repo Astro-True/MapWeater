@@ -1,8 +1,9 @@
-import React, { useState, useEffect, Key } from 'react';
+import React, { useState, useEffect, } from 'react';
 import MapView, { Marker } from 'react-native-maps';
-import { StyleSheet, View, Text, Image, Button, Modal, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, Image, Button, Modal, ScrollView, Dimensions } from 'react-native';
 import axios from 'axios';
 import * as Location from 'expo-location';
+import { LineChart } from "react-native-chart-kit";
 
 const API_KEY = 'dfbef9fd443b68f1b4944a7dd0bc141d';
 import { Data } from '../models/map';
@@ -33,15 +34,19 @@ const conditionTranslation: { [key: string]: string } = {
     "heavy snow": "nevada intensa",
     "freezing rain": "lluvia congelada",
     "clear": "despejado",
-};
+    "overcast clouds": "Nubes nubladas",
 
+};
+const kelvinToCelsius = (kelvin: number): string => {
+    return kelvin !== undefined ? (kelvin - 273.15).toFixed(1) : "N/A";
+};
 export default function TabOneScreen() {
     const [weatherData, setWeatherData] = useState<Data | null>(null);
     const [location, setLocation] = useState<LocationType | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
-    const kelvinToCelsius = (kelvin: number): string => {
-        return kelvin !== undefined ? (kelvin - 273.15).toFixed(1) : "N/A";
-    };
+    const [chartModalVisible, setChartModalVisible] = useState(false);
+
+
 
     const getLocation = async () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
@@ -69,6 +74,7 @@ export default function TabOneScreen() {
     useEffect(() => {
         getLocation();
     }, []);
+
     const getTranslatedCondition = (condition: string) => {
         return conditionTranslation[condition] || condition; // Si no se encuentra en el mapeo, se devuelve el original
     };
@@ -112,16 +118,38 @@ export default function TabOneScreen() {
 
         return `${hours}:${minutes}:${seconds}`;
     };
+
+    // Configuración del gráfico
+    const prepareChartData = () => {
+        if (!weatherData) return { labels: [], datasets: [{ data: [] }] };
+        const intervals = weatherData.list.slice(0, 8);
+        const labels = intervals.map((data: any) => data.dt_txt.split(' ')[1].slice(0, 5));
+        const temperatures = intervals.map((data: any) => parseFloat(kelvinToCelsius(data.main.temp)));
+
+        return {
+            labels,
+            datasets: [{ data: temperatures }],
+        };
+    };
+
+    const chartConfig = {
+        backgroundGradientFrom: '#ffffff',
+        backgroundGradientTo: '#ffffff',
+        decimalPlaces: 2,
+        color: (opacity = 1) => `rgba(0, 0, 255, ${opacity})`,
+        labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    };
+
     return (
         <View style={styles.container}>
-            <Button title="Ver tu ubicacion" onPress={() => setModalVisible(true)} />
-            <Modal
-                visible={modalVisible}
-                animationType="slide"
-                onRequestClose={() => setModalVisible(false)}
-            >
+            <View style={styles.contBtn}>
+                <Button title="Ver tu ubicacion" onPress={() => setModalVisible(true)} color="#4CAF50" />
+                <Button title="Ver gráfico del clima" onPress={() => setChartModalVisible(true)} color="#4CAF50" />
+            </View>
+            {/* Modal de ubicación */}
+            <Modal visible={modalVisible} animationType="slide" onRequestClose={() => setModalVisible(false)}>
                 <View style={styles.mapContainer}>
-                    {location && weatherData && (
+                    {location && (
                         <MapView
                             style={styles.map}
                             region={{
@@ -131,18 +159,30 @@ export default function TabOneScreen() {
                                 longitudeDelta: 0.05,
                             }}
                         >
-                            <Marker
-                                coordinate={location}
-                                title="Tu ubicación"
-                                description={getTranslatedCondition(weatherData.list[0].weather[0].description)}
-                                //image={{ uri: getWeatherIconUrl(weatherData.list[0].weather[0].icon) }}
-                                image={{ uri: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png' }} // Icono de marcador de Google Maps
-
-                            />
+                            <Marker coordinate={location} title="Tu ubicación" />
                         </MapView>
                     )}
                 </View>
-                <Button title="Cerrar" onPress={() => setModalVisible(false)} />
+                <Button title="Cerrar" onPress={() => setModalVisible(false)} color="#4CAF50" />
+            </Modal>
+
+            {/* Modal de gráfico */}
+            <Modal visible={chartModalVisible} animationType="slide" onRequestClose={() => setChartModalVisible(false)}>
+                <View style={styles.chartContainer}>
+                    {weatherData ? (
+                        <LineChart
+                            data={prepareChartData()}
+                            width={Dimensions.get('window').width}
+                            height={256}
+                            verticalLabelRotation={30}
+                            chartConfig={chartConfig}
+                            bezier
+                        />
+                    ) : (
+                        <Text style={styles.loadingText}>Cargando datos del clima...</Text>
+                    )}
+                </View>
+                <Button title="Cerrar" onPress={() => setChartModalVisible(false)} color="#4CAF50" />
             </Modal>
             <View style={styles.modalContainer}>
                 <ScrollView>
@@ -222,5 +262,29 @@ const styles = StyleSheet.create({
     },
     map: {
         ...StyleSheet.absoluteFillObject,
+    },
+    chartContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    contBtn: {
+        backgroundColor: '#0000',
+        flexDirection: 'row',
+        justifyContent: 'center',
+    },
+    button: {
+        backgroundColor: '#4CAF50',  // Color de fondo
+        paddingVertical: 1,          // Espaciado vertical
+        paddingHorizontal: 10,        // Espaciado horizontal
+        borderRadius: 8,              // Bordes redondeados
+        margin: 10,                  // Espaciado alrededor del botón
+        height: 30,
+    },
+    buttonText: {
+        color: '#fff',                // Color del texto
+        fontSize: 16,                 // Tamaño de la fuente
+        fontWeight: 'bold',           // Negrita
+        textAlign: 'center',          // Centrar el texto
     },
 });
