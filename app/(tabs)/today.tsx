@@ -2,7 +2,7 @@
 //const UrlApi = 'api.openweathermap.org/data/2.5/forecast?lat=-65.93253&lon=-17.58777&appid=dfbef9fd443b68f1b4944a7dd0bc141d'
 //const UrlApi = 'https://api.openweathermap.org/data/2.5/forecast?lat=-65.93253&lon=-17.58777&appid=dfbef9fd443b68f1b4944a7dd0bc141d';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Image, Button, Modal, ScrollView, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, Image, Button, Modal, ScrollView, Dimensions, ImageBackground } from 'react-native';
 import axios from 'axios';
 import * as Location from 'expo-location';
 import MapView, { Marker } from 'react-native-maps';
@@ -25,7 +25,7 @@ const conditionTranslation: { [key: string]: string } = {
   "tornado": "tornado",
   "light rain": "lluvia ligera",
   "drizzle": "llovizna",
-  "heavy rain": "lluvia intensa",
+  "heavy rain": "lluvia torrencial",
   "light snow": "nevada ligera",
   "heavy snow": "nevada intensa",
   "freezing rain": "lluvia congelada",
@@ -147,122 +147,150 @@ const TabOneScreen = () => {
 
 
   const chartConfig = {
-    backgroundGradientFrom: '#ffffff',
-    backgroundGradientTo: '#ffffff',
-    decimalPlaces: 2,
-    color: (opacity = 1) => `rgba(0, 0, 255, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    backgroundGradientFrom: '#0D1B2A', // Fondo superior (azul oscuro)
+    backgroundGradientTo: '#1B263B',   // Fondo inferior (azul oscuro más claro)
+    decimalPlaces: 0, // Número de decimales en los valores
+    color: (opacity = 1) => `rgba(0, 123, 255, ${opacity})`, // Línea azul vibrante
+    labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`, // Etiquetas blancas
     style: {
-      borderRadius: 16,
+      borderRadius: 16, // Bordes redondeados
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 5,
+    },
+    propsForDots: {
+      r: '3', // Radio de los puntos
+      strokeWidth: '2', // Ancho del borde de los puntos
+      stroke: '#007BFF', // Borde de los puntos (azul vibrante)
+    },
+    propsForBackgroundLines: {
+      stroke: '#1E3851', // Líneas de fondo (azul tenue)
     },
   };
+
 
   useEffect(() => {
     getLocation();
   }, []);
   return (
-    <View style={styles.container}>
-      <Button title="Ver tu ubicacion" onPress={() => setModalVisible(true)} />
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.mapContainer}>
-          {location && weatherData && (
-            <MapView
-              style={styles.map}
-              region={{
-                latitude: location.latitude,
-                longitude: location.longitude,
-                latitudeDelta: 0.05,
-                longitudeDelta: 0.05,
-              }}
-            >
-              <Marker
-                coordinate={location}
-                title="Tu ubicación"
-                description={getTranslatedCondition(weatherData.list[0].weather[0].description)}
-                image={{ uri: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png' }} // Icono de marcador de Google Maps
-              />
-            </MapView>
-          )}
-        </View>
-        <Button title="Cerrar" onPress={() => setModalVisible(false)} />
-      </Modal>
-
-      <View style={styles.modalContainer}>
-        <ScrollView>
-          {weatherData ? (
-            //weatherData.list.slice(0, 6).map((data: any, index: number) => (
-            getThreeHourIntervalsToday().map((data, index) => (
-              <View key={index} style={styles.dayContainer}>
-                <Text style={styles.weatherText}>
-                  Día: {getDayOfWeek(data.dt_txt)}
-                </Text>
-                <Text style={styles.weatherText}>
-                  Fecha: {getDate(data.dt_txt)}
-                </Text>
-                <Text style={styles.weatherText}>
-                  Hora: {getTime(data.dt_txt)}
-                </Text>
-                <Text style={styles.weatherText}>
-                  Temperatura: {kelvinToCelsius(data.main.temp)}°C
-                </Text>
-                <Text style={styles.weatherText}>
-                  Humedad: {data.main.humidity}%
-                </Text>
-                <Text style={styles.weatherText}>
-                  Velocidad del viento: {data.wind.speed} m/s
-                </Text>
-                <Text style={styles.weatherText}>
-                  Condición: {getTranslatedCondition(data.weather[0].description)}
-                </Text>
-                <Image
-                  source={{ uri: getWeatherIconUrl(data.weather[0].icon) }}
-                  style={styles.weatherIcon}
-                />
+    <ImageBackground
+      source={{ uri: 'https://th.bing.com/th/id/OIP.Uh7i_KXbFEG0TD_-VKcHzgHaNK?rs=1&pid=ImgDetMain' }}
+      style={styles.background}
+    >
+      <ScrollView>
+        <View style={styles.container}>
+          <Text style={styles.title}>Clima Actual</Text>
+          <View style={styles.modalContainer}>
+            <ScrollView>
+              {weatherData ? (
+                //weatherData.list.slice(0, 6).map((data: any, index: number) => (
+                getThreeHourIntervalsToday().map((data, index) => (
+                  <View key={index} style={styles.card}>
+                    <Text style={styles.tempText}>
+                      {new Date(data.dt_txt).toLocaleDateString('es-ES', {
+                        weekday: 'long',
+                      })}
+                    </Text>
+                    <Text style={styles.tempText}>
+                      {new Date(data.dt_txt).toLocaleDateString('es-ES', {
+                        day: 'numeric', month: 'short', year: 'numeric',
+                      })}
+                    </Text>
+                    <Text style={styles.tempText}>
+                      Hora: {getTime(data.dt_txt)}
+                    </Text>
+                    <Text style={styles.tempText}>
+                      Humedad: {data.main.humidity}%
+                    </Text>
+                    <Text style={styles.tempText}>
+                      Velocidad del viento: {data.wind.speed} m/s
+                    </Text>
+                    <Image
+                      source={{ uri: getWeatherIconUrl(data.weather[0].icon) }}
+                      style={styles.weatherIcon}
+                    />
+                    <Text style={styles.tempText}>
+                      {kelvinToCelsius(data.main.temp)}°C
+                    </Text>
+                    <Text style={styles.conditionText}>
+                      {getTranslatedCondition(data.weather[0].description)}
+                    </Text>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.loadingText}>Cargando datos del clima...</Text>
+              )}
+              <View style={styles.chartContainer}>
+                {weatherData ? (
+                  <LineChart
+                    data={prepareChartData()}
+                    width={screenWidth}
+                    height={256}
+                    verticalLabelRotation={30}
+                    chartConfig={chartConfig}
+                    bezier
+                  />
+                ) : (
+                  <Text style={styles.loadingText}>Cargando datos del clima...</Text>
+                )}
               </View>
-
-            ))
-
-          ) : (
-            <Text style={styles.loadingText}>Cargando datos del clima...</Text>
-          )}
-          <View style={styles.chartContainer}>
-            {weatherData ? (
-              <LineChart
-                data={prepareChartData()}
-                width={screenWidth}
-                height={256}
-                verticalLabelRotation={30}
-                chartConfig={chartConfig}
-                bezier
-              />
-            ) : (
-              <Text style={styles.loadingText}>Cargando datos del clima...</Text>
-            )}
+            </ScrollView>
+            <Button title="Ver tu ubicacion" onPress={() => setModalVisible(true)} />
+            <Modal
+              visible={modalVisible}
+              animationType="slide"
+              onRequestClose={() => setModalVisible(false)}
+            >
+              <View style={styles.mapContainer}>
+                {location && weatherData && (
+                  <MapView
+                    style={styles.map}
+                    region={{
+                      latitude: location.latitude,
+                      longitude: location.longitude,
+                      latitudeDelta: 0.05,
+                      longitudeDelta: 0.05,
+                    }}
+                  >
+                    <Marker
+                      coordinate={location}
+                      title="Tu ubicación"
+                      description={getTranslatedCondition(weatherData.list[0].weather[0].description)}
+                      image={{ uri: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png' }} // Icono de marcador de Google Maps
+                    />
+                  </MapView>
+                )}
+              </View>
+              <Button title="Cerrar" onPress={() => setModalVisible(false)} />
+            </Modal>
           </View>
-        </ScrollView>
-      </View>
-    </View>
+        </View>
+      </ScrollView>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+  },
   container: {
     flex: 1,
+    padding: 20,
+    alignItems: 'center',
   },
   modalContainer: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#fff',
+    alignItems: 'center',
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '300',
     textAlign: 'center',
-    marginBottom: 10,
+    color: '#fff',
+    marginBottom: 20,
   },
   dayContainer: {
     marginBottom: 20,
@@ -292,6 +320,28 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  card: {
+    width: 225,
+    backgroundColor: '#ffffffdd',
+    borderRadius: 20,
+    padding: 15,
+    marginBottom: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  conditionText: {
+    fontSize: 15,
+    color: '#666',
+  },
+  tempText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
   },
 });
 

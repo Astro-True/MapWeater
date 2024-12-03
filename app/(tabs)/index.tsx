@@ -17,13 +17,12 @@ const conditionTranslation: { [key: string]: string } = {
     "tornado": "tornado",
     "light rain": "lluvia ligera",
     "drizzle": "llovizna",
-    "heavy rain": "lluvia intensa",
+    "heavy rain": "lluvia torrencial",
     "light snow": "nevada ligera",
     "heavy snow": "nevada intensa",
     "freezing rain": "lluvia congelada",
     "clear": "despejado",
     "overcast clouds": "Nubes nubladas",
-
 };
 const conditionDetails: { [key: string]: { description: string, precipitationTypes: string[] } } = {
     "clear sky": {

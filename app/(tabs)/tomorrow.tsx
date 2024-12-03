@@ -29,13 +29,12 @@ const conditionTranslation: { [key: string]: string } = {
     "tornado": "tornado",
     "light rain": "lluvia ligera",
     "drizzle": "llovizna",
-    "heavy rain": "lluvia intensa",
+    "heavy rain": "lluvia torrencial",
     "light snow": "nevada ligera",
     "heavy snow": "nevada intensa",
     "freezing rain": "lluvia congelada",
     "clear": "despejado",
     "overcast clouds": "Nubes nubladas",
-
 };
 const kelvinToCelsius = (kelvin: number): string => {
     return kelvin !== undefined ? (kelvin - 273.15).toFixed(1) : "N/A";
@@ -133,12 +132,29 @@ export default function TabOneScreen() {
     };
 
     const chartConfig = {
-        backgroundGradientFrom: '#ffffff',
-        backgroundGradientTo: '#ffffff',
-        decimalPlaces: 2,
-        color: (opacity = 1) => `rgba(0, 0, 255, ${opacity})`,
-        labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+        backgroundGradientFrom: '#0D1B2A', // Fondo superior (azul oscuro)
+        backgroundGradientTo: '#1B263B',   // Fondo inferior (azul oscuro más claro)
+        decimalPlaces: 0, // Número de decimales en los valores
+        color: (opacity = 1) => `rgba(0, 123, 255, ${opacity})`, // Línea azul vibrante
+        labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`, // Etiquetas blancas
+        style: {
+            borderRadius: 16, // Bordes redondeados
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 5,
+        },
+        propsForDots: {
+            r: '3', // Radio de los puntos
+            strokeWidth: '2', // Ancho del borde de los puntos
+            stroke: '#007BFF', // Borde de los puntos (azul vibrante)
+        },
+        propsForBackgroundLines: {
+            stroke: '#1E3851', // Líneas de fondo (azul tenue)
+        },
     };
+
+
 
     return (
         <View style={styles.container}>
@@ -173,10 +189,12 @@ export default function TabOneScreen() {
                         <LineChart
                             data={prepareChartData()}
                             width={Dimensions.get('window').width}
-                            height={256}
+                            height={356}
+                            yAxisLabel="°K "
                             verticalLabelRotation={30}
                             chartConfig={chartConfig}
                             bezier
+                            xAxisLabel=" Horas"
                         />
                     ) : (
                         <Text style={styles.loadingText}>Cargando datos del clima...</Text>
