@@ -116,76 +116,76 @@ export default function TabOneScreen() {
             style={styles.background}
         >
             <ScrollView>
-            <View style={styles.container}>
-                <Text style={styles.title}>Pronóstico</Text>
-                {weatherData ? (
-                    <ScrollView>
-                        {getFiveDayForecast().map((data, index) => (
-                            <View key={index} style={styles.card}>
-                                <Text style={styles.tempText}>
-                                    {new Date(data.dt_txt).toLocaleDateString('es-ES', {
-                                        weekday: 'long',
-                                    })}
-                                </Text>
-                                <Text style={styles.tempText}>
-                                    {new Date(data.dt_txt).toLocaleDateString('es-ES', {
-                                        day: 'numeric', month: 'short', year: 'numeric',
-                                    })}
-                                </Text>
-                                <Text style={styles.tempText}>
-                                    Hora: {getTime(data.dt_txt)}
-                                </Text>
-                                <Text style={styles.tempText}>
-                                    Humedad: {data.main.humidity}%
-                                </Text>
-                                <Text style={styles.tempText}>
-                                    Velocidad del viento: {data.wind.speed} m/s
-                                </Text>
-                                <Image
-                                    source={{ uri: getWeatherIconUrl(data.weather[0].icon) }}
-                                    style={styles.weatherIcon}
-                                />
-                                <Text style={styles.tempText}>
-                                    {kelvinToCelsius(data.main.temp)}°C
-                                </Text>
-                                <Text style={styles.conditionText}>
-                                    {getTranslatedCondition(data.weather[0].description)}
-                                </Text>
-                            </View>
-                        ))}
-                    </ScrollView>
-                ) : (
-                    <Text style={styles.loadingText}>Cargando datos del clima...</Text>
-                )}
-                <Button title="Ver tu ubicacion" onPress={() => setModalVisible(true)} color="#1b4f72" />
-                <Modal
-                    visible={modalVisible}
-                    animationType="slide"
-                    onRequestClose={() => setModalVisible(false)}>
-                    <View style={styles.mapContainer}>
-                        {location && weatherData && (
-                            <MapView
-                                style={styles.map}
-                                initialRegion={{
-                                    latitude: location.latitude,
-                                    longitude: location.longitude,
-                                    latitudeDelta: 0.05,
-                                    longitudeDelta: 0.05,
-                                }}>
-                                <Marker
-                                    coordinate={location}
-                                    title="Tu ubicación"
-                                    description={getTranslatedCondition(
-                                        weatherData.list[0].weather[0].description
-                                    )}
-                                />
-                            </MapView>
-                        )}
-                    </View>
-                    <Button title="Cerrar" onPress={() => setModalVisible(false)} color="#1b4f72" />
-                </Modal>
-            </View>
-        </ScrollView>
+                <View style={styles.container}>
+                    <Text style={styles.title}>Pronóstico</Text>
+                    {weatherData ? (
+                        <ScrollView>
+                            {getFiveDayForecast().map((data, index) => (
+                                <View key={index} style={styles.card}>
+                                    <Text style={styles.tempText}>
+                                        {new Date(data.dt_txt).toLocaleDateString('es-ES', {
+                                            weekday: 'long',
+                                        })}
+                                    </Text>
+                                    <Text style={styles.tempText}>
+                                        {new Date(data.dt_txt).toLocaleDateString('es-ES', {
+                                            day: 'numeric', month: 'short', year: 'numeric',
+                                        })}
+                                    </Text>
+                                    <Text style={styles.tempText}>
+                                        Hora: {getTime(data.dt_txt)}
+                                    </Text>
+                                    <Text style={styles.tempText}>
+                                        Humedad: {data.main.humidity}%
+                                    </Text>
+                                    <Text style={styles.tempText}>
+                                        Velocidad del viento: {data.wind.speed} m/s
+                                    </Text>
+                                    <Image
+                                        source={{ uri: getWeatherIconUrl(data.weather[0].icon) }}
+                                        style={styles.weatherIcon}
+                                    />
+                                    <Text style={styles.tempText}>
+                                        {kelvinToCelsius(data.main.temp)}°C
+                                    </Text>
+                                    <Text style={styles.conditionText}>
+                                        {getTranslatedCondition(data.weather[0].description)}
+                                    </Text>
+                                </View>
+                            ))}
+                        </ScrollView>
+                    ) : (
+                        <Text style={styles.loadingText}>Cargando datos del clima...</Text>
+                    )}
+                    <Button title="Ver tu ubicacion" onPress={() => setModalVisible(true)} color="#1b4f72" />
+                    <Modal
+                        visible={modalVisible}
+                        animationType="slide"
+                        onRequestClose={() => setModalVisible(false)}>
+                        <View style={styles.mapContainer}>
+                            {location && weatherData && (
+                                <MapView
+                                    style={styles.map}
+                                    initialRegion={{
+                                        latitude: location.latitude,
+                                        longitude: location.longitude,
+                                        latitudeDelta: 0.05,
+                                        longitudeDelta: 0.05,
+                                    }}>
+                                    <Marker
+                                        coordinate={location}
+                                        title="Tu ubicación"
+                                        description={getTranslatedCondition(
+                                            weatherData.list[0].weather[0].description
+                                        )}
+                                    />
+                                </MapView>
+                            )}
+                        </View>
+                        <Button title="Cerrar" onPress={() => setModalVisible(false)} color="#1b4f72" />
+                    </Modal>
+                </View>
+            </ScrollView>
         </ImageBackground>
     );
 }

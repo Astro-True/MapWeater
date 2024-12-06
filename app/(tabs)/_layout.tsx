@@ -32,7 +32,7 @@ export default function TabLayout() {
           title: 'GUIA',
           tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
           headerRight: () => (
-            <Link href="/modal" asChild>
+            <Link href="/Referencias" asChild>
               <Pressable>
                 {({ pressed }) => (
                   <FontAwesome
@@ -73,13 +73,6 @@ export default function TabLayout() {
         name="fiveday"
         options={{
           title: 'Próximos 5 días',
-          tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
-        }}
-      />
-            <Tabs.Screen
-        name="pruebas"
-        options={{
-          title: 'Pruebas',
           tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
         }}
       />

@@ -197,8 +197,10 @@ export default function TabOneScreen() {
                 )}
             </View>
             <View style={styles.buttonContainer}>
-                <Button title="Volver a ubicación inicial" onPress={returnToInitialLocation} />
-                <Button title="Reajustar orientación" onPress={resetOrientation} />
+                <Button title="Volver a ubicación inicial" onPress={returnToInitialLocation} color="#1b4f72"/>
+            </View>
+            <View style={styles.buttonContainer}>
+                <Button title="Reajustar orientación" onPress={resetOrientation} color="#1b4f72"/>
             </View>
         </View>
     );
@@ -246,7 +248,7 @@ const styles = StyleSheet.create({
     buttonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        padding: 10,
+        padding: 5,
         backgroundColor: '#fff',
     },
 });

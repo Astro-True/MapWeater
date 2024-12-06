@@ -43,6 +43,8 @@ const TabOneScreen = () => {
   const [weatherData, setWeatherData] = useState<any | null>(null);
   const [location, setLocation] = useState<LocationType | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [chartModalVisible, setChartModalVisible] = useState(false);
+
 
   const getLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -221,22 +223,13 @@ const TabOneScreen = () => {
               ) : (
                 <Text style={styles.loadingText}>Cargando datos del clima...</Text>
               )}
-              <View style={styles.chartContainer}>
-                {weatherData ? (
-                  <LineChart
-                    data={prepareChartData()}
-                    width={screenWidth}
-                    height={256}
-                    verticalLabelRotation={30}
-                    chartConfig={chartConfig}
-                    bezier
-                  />
-                ) : (
-                  <Text style={styles.loadingText}>Cargando datos del clima...</Text>
-                )}
-              </View>
             </ScrollView>
-            <Button title="Ver tu ubicacion" onPress={() => setModalVisible(true)} />
+            <View style={styles.contBtn}>
+              <Button title="Ver gráfico del clima" onPress={() => setChartModalVisible(true)} color="#1b4f72" />
+            </View>
+            <View style={styles.contBtn}>
+              <Button title="Ver tu ubicacion" onPress={() => setModalVisible(true)} color="#1b4f72" />
+            </View>
             <Modal
               visible={modalVisible}
               animationType="slide"
@@ -263,6 +256,30 @@ const TabOneScreen = () => {
                 )}
               </View>
               <Button title="Cerrar" onPress={() => setModalVisible(false)} />
+            </Modal>
+            <Modal visible={chartModalVisible} animationType="slide" onRequestClose={() => setChartModalVisible(false)}>
+              <ImageBackground
+                source={{ uri: 'https://th.bing.com/th/id/OIP.Uh7i_KXbFEG0TD_-VKcHzgHaNK?rs=1&pid=ImgDetMain' }}
+                style={styles.background}
+              >
+                <View style={styles.chartContainer}>
+                  {weatherData ? (
+                    <LineChart
+                      data={prepareChartData()}
+                      width={Dimensions.get('window').width}
+                      height={356}
+                      yAxisLabel="°K "
+                      verticalLabelRotation={30}
+                      chartConfig={chartConfig}
+                      bezier
+                      xAxisLabel=" Horas"
+                    />
+                  ) : (
+                    <Text style={styles.loadingText}>Cargando datos del clima...</Text>
+                  )}
+                </View>
+                <Button title="Cerrar" onPress={() => setChartModalVisible(false)} color="#1b4f72" />
+              </ImageBackground>
             </Modal>
           </View>
         </View>
@@ -320,6 +337,26 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  contBtn: {
+    backgroundColor: '#0000',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    padding: 4,
+  },
+  button: {
+    backgroundColor: '#4CAF50',  // Color de fondo
+    paddingVertical: 1,          // Espaciado vertical
+    paddingHorizontal: 10,        // Espaciado horizontal
+    borderRadius: 8,              // Bordes redondeados
+    margin: 10,                  // Espaciado alrededor del botón
+    height: 30,
+  },
+  buttonText: {
+    color: '#fff',                // Color del texto
+    fontSize: 16,                 // Tamaño de la fuente
+    fontWeight: 'bold',           // Negrita
+    textAlign: 'center',          // Centrar el texto
   },
   card: {
     width: 225,
