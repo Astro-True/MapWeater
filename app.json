@@ -17,10 +17,26 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "FOREGROUND_SERVICE"
+      ],
+      "package": "com.gustavozuritacastro.inssolapp",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDCRXTWhU0vLtM7_eZI9Tz1YSgDw4ZuCUQ"
+        }
       }
     },
+    "permissions": [
+      "LOCATION"
+    ],
     "web": {
       "bundler": "metro",
       "output": "static",
@@ -31,6 +47,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "ebcdaf55-1280-4e75-8f9b-43d8c61375df"
+      }
     }
   }
 }
